@@ -13,9 +13,11 @@
     <None Remove="Images\Close1.png" />
     <None Remove="Images\Close2.png" />
     <None Remove="Images\FullScreen.png" />
+    <None Remove="Images\fullscreen_exit.png" />
     <None Remove="Images\LightTheme.png" />
     <None Remove="Images\minusbutton.png" />
     <None Remove="Images\NightTheme.png" />
+    <None Remove="Images\window.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +42,9 @@
     <Resource Include="Images\FullScreen.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Images\fullscreen_exit.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Images\LightTheme.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -49,10 +54,6 @@
     <Resource Include="Images\NightTheme.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

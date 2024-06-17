@@ -6,13 +6,14 @@
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
         Title="MainWindow" 
-        Height="1000" Width="1500" MinWidth="472" MinHeight="718"
+        Height="Auto" Width="1500" MinWidth="427" MinHeight="718"
         WindowStyle="None"
         Background="White"
         ResizeMode="CanResize"
         SizeToContent="Manual"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         WindowStartupLocation="CenterScreen"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+        StateChanged="Window_StateChanged">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -49,7 +50,7 @@
                             </Grid>
                         </Button>
                         <Button Grid.Column="1"  HorizontalAlignment="Right" Background="Transparent" Foreground="White" Click="MaximizeButton_Click" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent">
-                            <Image Source="..\Images\FullScreen.png" Width="12" Height="12"/>
+                            <Image x:Name="screenmode" Source="..\Images\FullScreen.png" Width="12" Height="12"/>
                         </Button>
                         <Button Grid.Column="0"  HorizontalAlignment="Right" Background="Transparent" Foreground="White" Click="MinimizeButton_Click" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent">
                             <Image Source="..\Images\minusbutton.png" Width="12" Height="12"/>
@@ -58,7 +59,7 @@
                 </Grid>
             </Border>
         </Grid>
-        <!-- Main content -->
+        <!-- Main -->
         <Grid Grid.Row="1" Background="{DynamicResource MainColorBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="25*"/>
@@ -87,7 +88,7 @@
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
                                 <Label Content="Расписание: " Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                <DatePicker Grid.Column="1" Language="RU" SelectedDate="{Binding DateNow}"/>
+                                <DatePicker Grid.Column="1" Language="RU" SelectedDate="{Binding DateNow}" Foreground="{DynamicResource PrimaryTextBrush}"/>
                             </Grid>
                         </Border>
                         <!-- Записи -->
@@ -112,37 +113,70 @@
                                     <Label Grid.Column="1" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" Content="10:00" HorizontalAlignment="Right" Margin="0, 5, 5, 0"/>
                                 </Grid>
                                 <Grid Grid.Row="1">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Margin="10" Background="#807F7F" Content="Начать прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent"/>
-                                    <Button Grid.Column="1" Margin="10" Background="#807F7F" Content="Отменить запись" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent"/>
+                                    <Button IsEnabled="False" Grid.Column="0" Margin="10" Background="#E8EAED" Content="Запись завершена" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent"/>
                                 </Grid>
                             </Grid>
-
+                            <!-- Пропущенная запись -->
+                            <Grid Margin="0, 0, 0, -10" Grid.Row="1">
+                                <ItemsControl ItemsSource="{Binding MissedAppointments}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Background="{DynamicResource MainColorBrush}" Margin="0, 10, 0, 0" Grid.Row="1">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="50*"/>
+                                                    <RowDefinition Height="50*"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Label Grid.Column="0" Content="{Binding FullName}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" Margin="5, 5, 0, 0" VerticalAlignment="Center"/>
+                                                    <Label Grid.Column="1" Content="{Binding AppointmentTime}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Right" Margin="0, 5, 5, 0"/>
+                                                </Grid>
+                                                <Grid Grid.Row="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Button Grid.Column="0" Margin="10" Background="#807F7F" Content="Начать прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.StartAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                                                    <Button Grid.Column="1" Margin="10" Background="#807F7F" Content="Отменить запись" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.CancelMissedAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                                                </Grid>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
                             <!-- Действующая запись -->
-                            <Grid Grid.Row="1" Background="{DynamicResource MainColorBrush}" Margin="0, 10, 0, 0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="50*"/>
-                                    <RowDefinition Height="50*"/>
-                                </Grid.RowDefinitions>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Grid.Column="0" Content="Иванова Ирина Ивановна" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" Margin="5, 5, 0, 0"/>
-                                    <Label Grid.Column="1" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" Content="10:40" HorizontalAlignment="Right" Margin="0, 5, 5, 0"/>
-                                </Grid>
-                                <Grid Grid.Row="1">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="Начать прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent"/>
-                                    <Button Grid.Column="1" Margin="10" Background="#FE0000" Content="Отменить запись" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent"/>
-                                </Grid>
+                            <Grid Grid.Row="2" Margin="0, 10, 0, 0">
+                                <ItemsControl ItemsSource="{Binding CurrentAppointments}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Background="{DynamicResource MainColorBrush}" Margin="0, 10, 0, 0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="50*"/>
+                                                    <RowDefinition Height="50*"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Label Grid.Column="0" Content="{Binding FullName}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" Margin="5, 5, 0, 0"/>
+                                                    <Label Grid.Column="1" Content="{Binding AppointmentTime}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Right" Margin="0, 5, 5, 0"/>
+                                                </Grid>
+                                                <Grid Grid.Row="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="Начать прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.StartAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                                                    <Button Grid.Column="1" Margin="10" Background="#FE0000" Content="Отменить запись" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.CancelAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                                                </Grid>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </Grid>
                         </Grid>
                         <!-- Кнопка выйти из аккаунта -->
@@ -152,7 +186,7 @@
                     </Grid>
                 </Grid>
             </ScrollViewer>
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Hidden">
+            <ScrollViewer Grid.Column="1" Visibility="{Binding MainVisibility}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -191,8 +225,15 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <Label Foreground="{DynamicResource PrimaryTextBrush}" Grid.Column="0" Content="Пациент: Иванова Ирина Ивановна" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontFamily="Inter" Padding="0, 0, 0, 0"/>
-                        <Label Foreground="{DynamicResource PrimaryTextBrush}" Grid.Column="1" Content="Номер полиса: 7777 0000 0000 0000" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="Inter" Padding="0, 0, 0, 0"/>
+                        <Label Foreground="{DynamicResource PrimaryTextBrush}" Grid.Column="0" Content="{Binding PatientName}" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" FontFamily="Inter" Padding="0, 0, 0, 0"/>
+                        <Grid Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Foreground="{DynamicResource PrimaryTextBrush}" Grid.Column="0" Content="Номер полиса: " FontSize="20" FontFamily="Inter" Padding="0, 0, 0, 0"/>
+                            <Label Foreground="{DynamicResource PrimaryTextBrush}" Grid.Column="1" Content="{Binding OMS}" FontSize="20" FontFamily="Inter" Padding="0, 0, 0, 0"/>
+                        </Grid>
                     </Grid>
                     <Grid Margin="10, 5, 10, 5" Grid.Row="1">
                         <Label Foreground="{DynamicResource PrimaryTextBrush}" Content="Прием:" FontSize="16" FontFamily="Inter" Padding="0, 0, 0, 0"/>
@@ -288,22 +329,180 @@
                         </ItemsControl>
                     </Grid>
                     <Grid Margin="10" Grid.Row="9">
-                        <CheckBox MinHeight="18" MinWidth="18" Content="Анализ:" FontFamily="Inter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" MinHeight="18" MinWidth="18" Content="Анализ:" FontFamily="Inter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource PrimaryTextBrush}" IsChecked="{Binding AnalysisCheckBox}" Command="{Binding AnalysisComboBoxCommand}"/>
+                        <TextBox Grid.Column="1" BorderBrush="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" MinHeight="20" Height="Auto" FontFamily="Inter" VerticalContentAlignment="Center" materialDesign:HintAssist.Hint="Наименование анализа" FontSize="14" Padding="5" Foreground="{DynamicResource SecondaryTextBrush}" Margin="15, 0, 0, 0"/>
                     </Grid>
+                    
                     <Grid Margin="10" Grid.Row="10">
-                        <RichTextBox Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <RichTextBox x:Name="AnalysisRTB" Foreground="{DynamicResource PrimaryTextBrush}" Margin="10,0,-10,0" BorderBrush="Transparent" Visibility="{Binding AnalysisRTBVisibility}">
+                            <RichTextBox.Document>
+                                <FlowDocument>
+                                    <!-- Дата приема -->
+                                    <Paragraph>
+                                        <Run FontWeight="Bold">Дата:</Run>
+                                        <Run Text="{Binding DateNow}"/>
+                                    </Paragraph>
+
+                                    <!-- Полис ОМС -->
+                                    <Paragraph>
+                                        <Run FontWeight="Bold">Полис ОМС:</Run>
+                                        <Run Text="{Binding OMS}"/>
+                                    </Paragraph>
+
+                                    <!-- Название теста -->
+                                    <Paragraph FontSize="16" TextAlignment="Center" Margin="0,0,0,5">
+                                        ИССЛЕДОВАНИЕ "НАЗВАНИЕ ТЕСТА"
+                                    </Paragraph>
+                                    <Paragraph TextAlignment="Center" FontSize="10" Margin="0,0,0,5">
+                                        КЛИНИКО-ДИАГНОСТИЧЕСКАЯ ЛАБОРАТОРИЯ
+                                    </Paragraph>
+                                    <!-- Результаты лабораторных исследований -->
+                                    <Paragraph FontSize="20" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,10">
+                                        РЕЗУЛЬТАТЫ ЛАБОРАТОРНЫХ ИССЛЕДОВАНИЙ
+                                    </Paragraph>
+
+                                    <!-- Название теста -->
+                                    <Paragraph>
+                                        <Run>Название теста</Run>
+                                    </Paragraph>
+
+                                    <!-- Биоматериал -->
+                                    <Paragraph>
+                                        <Run FontWeight="Bold">Биоматериал:</Run>
+                                        <Run>Биоматериал</Run>
+                                    </Paragraph>
+                                    
+                                    <!-- Таблица -->
+                                    <Table CellSpacing="0" BorderBrush="Black" BorderThickness="0.1" TextAlignment="Center" x:Name="Tableee">
+                                        <Table.Columns>
+                                            <TableColumn Width="Auto"/>
+                                            <TableColumn Width="Auto"/>
+                                            <TableColumn Width="Auto"/>
+                                            <TableColumn Width="Auto"/>
+                                            <TableColumn Width="Auto"/>
+                                        </Table.Columns>
+                                        <TableRowGroup>
+                                            <!-- Заголовок таблицы -->
+                                            <TableRow>
+                                                <TableCell BorderBrush="Black" BorderThickness="1">
+                                                    <Paragraph LineHeight="30" TextAlignment="Left" FontWeight="Bold">Тест</Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1" TextAlignment="Center" FontWeight="Bold">
+                                                    <Paragraph>Результат</Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1" TextAlignment="Center" FontWeight="Bold">
+                                                    <Paragraph>Норма</Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1" TextAlignment="Center" FontWeight="Bold">
+                                                    <Paragraph>Отклонение</Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1" TextAlignment="Center" FontWeight="Bold">
+                                                    <Paragraph>Критичность отклонения</Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1" TextAlignment="Center" FontWeight="Bold">
+                                                    <Paragraph>Ед. изм.</Paragraph>
+                                                </TableCell>
+                                            </TableRow>
+                                            <!-- Пример строки данных -->
+                                            <TableRow>
+                                                <TableCell BorderBrush="Black" BorderThickness="1">
+                                                    <Paragraph LineHeight="70"></Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1">
+                                                    <Paragraph></Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1">
+                                                    <Paragraph></Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1">
+                                                    <Paragraph>-</Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1">
+                                                    <Paragraph>-</Paragraph>
+                                                </TableCell>
+                                                <TableCell BorderBrush="Black" BorderThickness="1">
+                                                    <Paragraph></Paragraph>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableRowGroup>
+                                    </Table>
+                                </FlowDocument>
+                            </RichTextBox.Document>
+                        </RichTextBox>
                     </Grid>
                     <Grid Margin="10" Grid.Row="11">
-                        <CheckBox MinHeight="18" MinWidth="18" Content="Исследования:" FontFamily="Inter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" MinHeight="18" MinWidth="18" Content="Исследования:" FontFamily="Inter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource PrimaryTextBrush}" IsChecked="{Binding ResearchCheckBox}" Command="{Binding ResearchComboBoxCommand}"/>
+                        <TextBox Grid.Column="1" BorderBrush="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" MinHeight="20" Height="Auto" FontFamily="Inter" VerticalContentAlignment="Center" materialDesign:HintAssist.Hint="Наименование исследования" FontSize="14" Padding="5" Foreground="{DynamicResource SecondaryTextBrush}" Margin="15, 0, 0, 0"/>
                     </Grid>
                     <Grid Margin="10" Grid.Row="12">
-                        <RichTextBox Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <RichTextBox Foreground="{DynamicResource PrimaryTextBrush}" BorderBrush="Transparent" Visibility="{Binding ResearchRTBVisibility}">
+                            <FlowDocument>
+                                <Paragraph>
+                                    <Run Text="Дата: " FontWeight="Bold"/>
+                                    <Run Text="{Binding DateNow}"/>
+                                </Paragraph>
+                                <Paragraph>
+                                    <Run Text="Полис ОМС: " FontWeight="Bold"/>
+                                    <Run Text="{Binding OMS}"/>
+                                </Paragraph>
+                                <Paragraph TextAlignment="Center" FontSize="18" FontWeight="Bold">
+                                    Протокол
+                                    <Run Text="Название исследования"/>
+                                </Paragraph>
+                                <Paragraph BorderThickness="0,1,0,1" BorderBrush="Black" Padding="0, 10, 0, 10">
+                                    <Bold>Информация</Bold>
+                                    <LineBreak/>
+                                    <Run Text="Предварительный диагноз: "/>
+                                    <Run Text="Название диагноза, подтверждается из выбора диагноза выше"/>
+                                    <LineBreak/>
+                                    <Run Text="Цель исследования: "/>
+                                    <Run Text="Цель исследования"/>
+                                    <LineBreak/>
+                                    <Run Text="Обоснование: "/>
+                                    <Run Text="Обоснование"/>
+                                    <LineBreak/>
+                                    <Run Text="Дата исследования: "/>
+                                    <Run Text="Дата проведения исследования"/>
+                                </Paragraph>
+                                <Paragraph>
+                                    <Bold>Описание</Bold>
+                                    <LineBreak/>
+                                    <Run Text="Эндоскоп: Pentax FG-24V(NB5) Анестезия: Лидокаин спрей 10% - 3 дозы"/>
+                                    <LineBreak/>
+                                    <Run Text="ДВУ: ручной режим, раствор КСЮОН 2% ГА"/>
+                                    <LineBreak/>
+                                    <Run Text="Время проведения исследования: 15:10-15:15"/>
+                                    <LineBreak/>
+                                    <Run Text="Эндоскоп свободно проведен в пищевод. Просвет его не нарушен, перистальтика прослеживается. Слизистая пищевода светло-розовая. Зубчатая линия выражена, расположена на расстоянии 39 см от резцов, на уровне перехода пищеводного отверстия диафрагмы. Кардиа смыкается полностью, свободно проходим."/>
+                                    <LineBreak/>
+                                    <Run Text="Желудок обычных размеров и формы. В просвете желудка умеренное количество прозрачного, пенистого содержимого. Стенки эластичные, хорошо расправляются при инссуффляции воздухом. Складки обычной высоты, извиты, расположены продольно. При осмотре в инверсии кардиа плотно охватывает эндоскоп, область свода без особенностей. Слизистая желудка розовая. Привратник округлой формы, смыкается полностью, свободно проходим."/>
+                                    <LineBreak/>
+                                    <Run Text="Луковица 12-перстной кишки не деформирована, слизистая светло-розовая. Выход из луковицы свободный. Постбульбарные отделы не изменены, циркулярные складки выражены. Слизистая их светло-розовая. БДС при осмотре трофей органических изменений не выявлено."/>
+                                </Paragraph>
+                                <Paragraph BorderThickness="0,1,0,1" BorderBrush="Black" Padding="0,5">
+                                    <Run Text="Заключение " FontWeight="Bold"/>
+                                    <Run Text="Патологических изменений слизистой осмотренных органов не выявлено"/>
+                                </Paragraph>
+                                <Paragraph BorderBrush="Black">
+                                    <Run Text="Оборудование Название устройства: " FontWeight="Bold"/>
+                                    <Run Text="стойка видео-эндоскопическая (комплект), гастроскоп PENTAX FG 24V."/>
+                                </Paragraph>
+                            </FlowDocument>
+                        </RichTextBox>
                     </Grid>
-                    <Grid Margin="10" Grid.Row="13">
+                    <Grid Margin="10" Grid.Row="13" Visibility="{Binding AttachFilesButton}">
                         <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="Прикрепить дополнительные файлы" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" FontSize="16"/>
                     </Grid>
                     <Grid Margin="10" Grid.Row="14">
-                        <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="Завершить прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" FontSize="16"/>
+                        <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="Завершить прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" FontSize="16" Command="{Binding CompleteTheAppointmentCommand}"/>
                     </Grid>
                 </Grid>
             </ScrollViewer>

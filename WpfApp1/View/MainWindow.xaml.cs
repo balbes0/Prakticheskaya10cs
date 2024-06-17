@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using WpfApp1.ViewModel;
@@ -27,6 +28,7 @@ namespace WpfApp1
             else
             {
                 WindowState = WindowState.Maximized;
+                screenmode.Source = new BitmapImage(new Uri("../Images/fullscreen_exit.png", UriKind.Relative));
             }
         }
 
@@ -47,6 +49,18 @@ namespace WpfApp1
                     Top = mousePos.Y - (30 / 2);
                 }
                 DragMove();
+            }
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Maximized && WindowStyle == WindowStyle.None)
+            {
+                screenmode.Source = new BitmapImage(new Uri("../Images/fullscreen_exit.png", UriKind.Relative));
+            }
+            else
+            {
+                screenmode.Source = new BitmapImage(new Uri("../Images/FullScreen.png", UriKind.Relative));
             }
         }
         #endregion
