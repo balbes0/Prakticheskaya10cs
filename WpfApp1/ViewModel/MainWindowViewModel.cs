@@ -3,11 +3,14 @@ using System.Windows;
 using WpfApp1.ViewModel.Helpers;
 using System.Collections.ObjectModel;
 using WpfApp1.Models;
+using Newtonsoft.Json;
+using System.Data;
 
 namespace WpfApp1.ViewModel
 {
     class MainWindowViewModel : BindingHelper
     {
+        private string port = "7107";
         private bool isDarkTheme = false;
         public MainWindowViewModel()
         {
@@ -15,41 +18,68 @@ namespace WpfApp1.ViewModel
             AnalysisComboBoxCommand = new BindableCommand(_ => AnalysisRTB()); //направления пример
             ResearchComboBoxCommand = new BindableCommand(_ => ResearchRTB());
             StartAppointmentCommand = new BindableCommand(ShowOMS);
-            CancelAppointmentCommand = new BindableCommand(CancelAppointment);
+            CancelAppointmentCommand = new BindableCommand(CancelAppointment); //кнопка отменить запись
             CancelMissedAppointmentCommand = new BindableCommand(CancelMissedAppointment);
-            CompleteTheAppointmentCommand = new BindableCommand(_ => CompleteTheAppointment());
+            CompleteTheAppointmentCommand = new BindableCommand(_ => CompleteTheAppointment()); //кнопка завершить прием
+            LogoutCommand = new BindableCommand(_ => Logout()); //кнопка выйти из аккаунта
             analysisRTBVisibility = Visibility.Collapsed; //РТБ с анализами по дефолту скрыта
             researchRTBVisibility = Visibility.Collapsed; //РТБ с исследованиями по дефолту скрыта
             AttachFilesButton = Visibility.Collapsed; //Кнопка прикрепить файлы по дефолту скрыта
             MainVisibility = Visibility.Hidden;
-
+            UpdateCurrentAppointments();
             directions = new List<string>
             {
                 "Офтальмолог",
                 "Кардиолог",
                 "Невролог"
             };
-
-            CurrentAppointments = new ObservableCollection<Appointment>
-            {
-                new Appointment { OMS = 7777000100000000, FullName = "Иванова Ирина Ивановна", AppointmentTime = new TimeOnly(12, 40), AppointmentDate = new DateOnly(2024, 6, 17) },
-                new Appointment { OMS = 7777000200000000, FullName = "Петров Сергей Александрович", AppointmentTime = new TimeOnly(11, 00), AppointmentDate = new DateOnly(2024, 6, 17) },
-                new Appointment { OMS = 7777000300000000, FullName = "Сидорова Мария Ивановна", AppointmentTime = new TimeOnly(11, 20), AppointmentDate = new DateOnly(2024, 6, 17)}
-            };
-
-            MissedAppointments = new ObservableCollection<Appointment>
-            {
-                new Appointment { OMS = 7777000100000000, FullName = "Иванова Ирина Ивановна", AppointmentTime = new TimeOnly(9, 40), AppointmentDate = new DateOnly(2024, 6, 17) },
-                new Appointment { OMS = 7777000200000000, FullName = "Петров Сергей Александрович", AppointmentTime = new TimeOnly(10, 00), AppointmentDate = new DateOnly(2024, 6, 17) },
-                new Appointment { OMS = 7777000300000000, FullName = "Сидорова Мария Ивановна", AppointmentTime = new TimeOnly(10, 20), AppointmentDate = new DateOnly(2024, 6, 17)}
-            };
         }
-
 
         #region Свойства
         #region Список_записей
-        public ObservableCollection<Appointment> CurrentAppointments { get; set; }
-        public ObservableCollection<Appointment> MissedAppointments { get; set; }
+        private ObservableCollection<Appointment> currentAppointments;
+        public ObservableCollection<Appointment> CurrentAppointments
+        {
+            get { return currentAppointments; }
+            set
+            {
+                currentAppointments = value;
+                OnPropertyChanged(nameof(CurrentAppointments));
+            }
+        }
+
+        private ObservableCollection<Appointment> missedAppointments;
+        public ObservableCollection<Appointment> MissedAppointments
+        {
+            get { return missedAppointments; }
+            set
+            {
+                missedAppointments = value;
+                OnPropertyChanged(nameof(MissedAppointments));
+            }
+        }        
+        
+        private ObservableCollection<Appointment> completedAppointments;
+        public ObservableCollection<Appointment> CompletedAppointments
+        {
+            get { return completedAppointments; }
+            set
+            {
+                completedAppointments = value;
+                OnPropertyChanged(nameof(CompletedAppointments));
+            }
+        }
+
+        private ObservableCollection<Appointment> allAppointments;
+        public ObservableCollection<Appointment> AllAppointments
+        {
+            get { return allAppointments; }
+            set
+            {
+                allAppointments = value;
+                OnPropertyChanged(nameof(AllAppointments));
+            }
+        }
         #endregion
 
         #region Имя_пациента
@@ -157,8 +187,12 @@ namespace WpfApp1.ViewModel
             get { return dateNow; }
             set
             {
-                dateNow = value;
-                OnPropertyChanged();
+                if (dateNow != value)
+                {
+                    dateNow = value;
+                    OnPropertyChanged(nameof(DateNow));
+                    UpdateCurrentAppointments(); // вызов метода для обновления списка
+                }
             }
         }
         #endregion
@@ -199,22 +233,75 @@ namespace WpfApp1.ViewModel
         public BindableCommand CancelAppointmentCommand { get; set; }
         public BindableCommand CancelMissedAppointmentCommand { get; set; }
         public BindableCommand CompleteTheAppointmentCommand { get; set; }
+        public BindableCommand LogoutCommand { get; set; }
         #endregion
+
+        private void UpdateCurrentAppointments()
+        {
+            var dateNow = DateOnly.FromDateTime(DateTime.Now);
+            var timeNow = TimeOnly.FromDateTime(DateTime.Now);
+
+            string DateNowAPI = DateTime.Parse(DateNow).ToString("yyyy-MM-dd");
+            var json = ApiHelper.Get($"https://localhost:{port}/api/Appointments/WithPatientDetails?date={DateNowAPI}");
+            var result = JsonConvert.DeserializeObject<ObservableCollection<Appointment>>(json);
+
+            var currentAppointmentsTemp = new ObservableCollection<Appointment>();
+            var missedAppointmentsTemp = new ObservableCollection<Appointment>();
+            var completedAppointmentsTemp = new ObservableCollection<Appointment>();
+
+            foreach (var appointment in result)
+            {
+                if (appointment.StatusId == 1)
+                {
+                    var appointmentDate = appointment.AppointmentDate;
+                    var appointmentTime = appointment.AppointmentTime;
+
+                    if (appointmentDate < dateNow ||
+                        (appointmentDate == dateNow && appointmentTime < timeNow))
+                    {
+                        missedAppointmentsTemp.Add(appointment);
+                    }
+                    else
+                    {
+                        currentAppointmentsTemp.Add(appointment);
+                    }
+                }
+                else if (appointment.StatusId == 2)
+                {
+                    completedAppointmentsTemp.Add(appointment);
+                }
+            }
+
+            CurrentAppointments = currentAppointmentsTemp;
+            MissedAppointments = missedAppointmentsTemp;
+            CompletedAppointments = completedAppointmentsTemp;
+
+            var combinedAppointments = new List<Appointment>();
+            combinedAppointments.AddRange(currentAppointmentsTemp);
+            combinedAppointments.AddRange(missedAppointmentsTemp);
+            combinedAppointments.AddRange(completedAppointmentsTemp);
+
+            AllAppointments = new ObservableCollection<Appointment>(combinedAppointments.OrderBy(a => a.AppointmentDate).ThenBy(a => a.AppointmentTime));
+        }
 
         private void CompleteTheAppointment() //завершение приема
         {
-            
             MainVisibility = Visibility.Collapsed;
             PatientName = string.Empty;
             OMS = string.Empty;
+        }
+
+        private void Logout()
+        {
+            MessageBox.Show("типо вышел из аккаунта");
         }
 
         private void CancelMissedAppointment(object parameter) //для отмены пропущенной записи
         {
             if (parameter is Appointment appointment)
             {
-                MissedAppointments.Remove(appointment);
-                MessageBox.Show($"Запись для {appointment.FullName} отменена.", "Отмена записи", MessageBoxButton.OK, MessageBoxImage.Information);
+                /*MissedAppointments.Remove(appointment);*/
+                MessageBox.Show($"OMS: {appointment.IdAppointment}", "Отмена записи", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -222,8 +309,8 @@ namespace WpfApp1.ViewModel
         {
             if (parameter is Appointment appointment)
             {
-                CurrentAppointments.Remove(appointment);
-                MessageBox.Show($"Запись для {appointment.FullName} отменена.", "Отмена записи", MessageBoxButton.OK, MessageBoxImage.Information);
+                /*CurrentAppointments.Remove(appointment);*/
+                MessageBox.Show($"Запись для {appointment.IdAppointment}", "Отмена записи", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -231,13 +318,14 @@ namespace WpfApp1.ViewModel
         {
             if (parameter is Appointment appointment)
             {
-                PatientName = $"Пациент: {appointment.FullName}";
+                PatientName = $"Пациент: {appointment.OMS}";
                 OMS = $"{appointment.OMS:0000 0000 0000 0000}";
                 MainVisibility = Visibility.Visible;
             }
         }
 
-        private void ResearchRTB()
+        #region Визуал приколы
+        private void ResearchRTB() //чекбокс исследования ртб
         {
             if (researchCheckBox == true)
             {
@@ -251,7 +339,7 @@ namespace WpfApp1.ViewModel
             }
         }
 
-        private void AnalysisRTB()
+        private void AnalysisRTB() //чекбокс анализы ртб
         {
             if (analysisCheckBox == true)
             {
@@ -263,25 +351,27 @@ namespace WpfApp1.ViewModel
             }
         }
 
-        private void SwitchTheme()
+        private void SwitchTheme() //кнопка сменить тему в титлбаре
         {
             if (isDarkTheme)
+            {
+                Application.Current.Resources.MergedDictionaries[2] = new ResourceDictionary()
+                {
+                    Source = new Uri("pack://application:,,,/ThemeLibrary;component/Themes/LightTheme.xaml")
+                };
+                ImageTheme = new BitmapImage(new Uri("../Images/NightTheme.png", UriKind.Relative));
+                isDarkTheme = false;
+            }
+            else if (!isDarkTheme)
             {
                 Application.Current.Resources.MergedDictionaries[2] = new ResourceDictionary()
                 {
                     Source = new Uri("pack://application:,,,/ThemeLibrary;component/Themes/DarkTheme.xaml")
                 };
                 ImageTheme = new BitmapImage(new Uri("../Images/LightTheme.png", UriKind.Relative));
-                isDarkTheme = false;
-            }
-            else
-            {
-                Application.Current.Resources.MergedDictionaries[2] = new ResourceDictionary()
-                {
-                    Source = new Uri("pack://application:,,,/ThemeLibrary;component/Themes/LightTheme.xaml")
-                };
                 isDarkTheme = true;
             }
         }
+        #endregion
     }
 }
