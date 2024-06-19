@@ -5,6 +5,8 @@ using System.Collections.ObjectModel;
 using WpfApp1.Models;
 using Newtonsoft.Json;
 using System.Data;
+using WpfApp1.View.Cards;
+using System.Windows.Controls;
 
 namespace WpfApp1.ViewModel
 {
@@ -27,12 +29,6 @@ namespace WpfApp1.ViewModel
             AttachFilesButton = Visibility.Collapsed; //Кнопка прикрепить файлы по дефолту скрыта
             MainVisibility = Visibility.Hidden;
             UpdateCurrentAppointments();
-            directions = new List<string>
-            {
-                "Офтальмолог",
-                "Кардиолог",
-                "Невролог"
-            };
         }
 
         #region Свойства
@@ -80,6 +76,18 @@ namespace WpfApp1.ViewModel
                 OnPropertyChanged(nameof(AllAppointments));
             }
         }
+
+        private ObservableCollection<UserControl> _appointmentCards;
+        public ObservableCollection<UserControl> AppointmentCards
+        {
+            get { return _appointmentCards; }
+            set
+            {
+                _appointmentCards = value;
+                OnPropertyChanged(nameof(AppointmentCards));
+            }
+        }
+
         #endregion
 
         #region Имя_пациента
@@ -211,14 +219,14 @@ namespace WpfApp1.ViewModel
         #endregion
 
         #region Список_направлений
-        private List<string> directions;
+        private List<string> directions = new List<string>();
         public List<string> Directions
         {
             get { return directions; }
             set
             {
                 directions = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(Directions));
             }
         }
         #endregion
@@ -236,7 +244,7 @@ namespace WpfApp1.ViewModel
         public BindableCommand LogoutCommand { get; set; }
         #endregion
 
-        private void UpdateCurrentAppointments()
+        private void UpdateCurrentAppointments() //метод для обновления списка записей
         {
             var dateNow = DateOnly.FromDateTime(DateTime.Now);
             var timeNow = TimeOnly.FromDateTime(DateTime.Now);
@@ -249,6 +257,9 @@ namespace WpfApp1.ViewModel
             var missedAppointmentsTemp = new ObservableCollection<Appointment>();
             var completedAppointmentsTemp = new ObservableCollection<Appointment>();
 
+            var combinedAppointments = new List<Appointment>();
+            var appointmentCards = new ObservableCollection<UserControl>();
+
             foreach (var appointment in result)
             {
                 if (appointment.StatusId == 1)
@@ -259,30 +270,36 @@ namespace WpfApp1.ViewModel
                     if (appointmentDate < dateNow ||
                         (appointmentDate == dateNow && appointmentTime < timeNow))
                     {
+                        MissedAppointment missedAppointment = new MissedAppointment(appointment);
                         missedAppointmentsTemp.Add(appointment);
+                        appointmentCards.Add(missedAppointment);
                     }
                     else
                     {
+                        CurrentAppointment currentAppointment = new CurrentAppointment(appointment);
                         currentAppointmentsTemp.Add(appointment);
+                        appointmentCards.Add(currentAppointment);
                     }
                 }
                 else if (appointment.StatusId == 2)
                 {
+                    CompletedAppointment completedAppointment = new CompletedAppointment(appointment);
                     completedAppointmentsTemp.Add(appointment);
+                    appointmentCards.Add(completedAppointment);
                 }
+
+                combinedAppointments.Add(appointment);
             }
 
             CurrentAppointments = currentAppointmentsTemp;
             MissedAppointments = missedAppointmentsTemp;
             CompletedAppointments = completedAppointmentsTemp;
 
-            var combinedAppointments = new List<Appointment>();
-            combinedAppointments.AddRange(currentAppointmentsTemp);
-            combinedAppointments.AddRange(missedAppointmentsTemp);
-            combinedAppointments.AddRange(completedAppointmentsTemp);
+            AllAppointments = new ObservableCollection<Appointment>(combinedAppointments.OrderBy(a => a.AppointmentDate).ThenBy(a => a.AppointmentTime));//сортировка записей по времени
 
-            AllAppointments = new ObservableCollection<Appointment>(combinedAppointments.OrderBy(a => a.AppointmentDate).ThenBy(a => a.AppointmentTime));
+            AppointmentCards = appointmentCards;
         }
+
 
         private void CompleteTheAppointment() //завершение приема
         {
@@ -301,7 +318,7 @@ namespace WpfApp1.ViewModel
             if (parameter is Appointment appointment)
             {
                 /*MissedAppointments.Remove(appointment);*/
-                MessageBox.Show($"OMS: {appointment.IdAppointment}", "Отмена записи", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"OMS: {appointment.IdAppointment}");
             }
         }
 
@@ -310,7 +327,7 @@ namespace WpfApp1.ViewModel
             if (parameter is Appointment appointment)
             {
                 /*CurrentAppointments.Remove(appointment);*/
-                MessageBox.Show($"Запись для {appointment.IdAppointment}", "Отмена записи", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Запись для {appointment.IdAppointment}");
             }
         }
 
@@ -318,6 +335,11 @@ namespace WpfApp1.ViewModel
         {
             if (parameter is Appointment appointment)
             {
+                var json = ApiHelper.Get($"https://localhost:{port}/api/Directions/WithSpecialistDetails?_oms={appointment.OMS}");
+                var result = JsonConvert.DeserializeObject<List<DirectionsWithSpecialistDetails>>(json);
+
+                Directions = result.Select(item => item.Name).ToList();
+
                 PatientName = $"Пациент: {appointment.OMS}";
                 OMS = $"{appointment.OMS:0000 0000 0000 0000}";
                 MainVisibility = Visibility.Visible;

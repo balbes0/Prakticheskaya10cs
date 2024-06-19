@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="WpfApp1.View.Cards.MissedAppointment"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <Grid Background="{DynamicResource MainColorBrush}" Margin="0, 10, 0, 0" Grid.Row="1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50*"/>
+            <RowDefinition Height="50*"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="{Binding FullName}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" Margin="5, 5, 0, 0" VerticalAlignment="Center"/>
+            <Label Grid.Column="1" Content="{Binding AppointmentTime}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Right" Margin="0, 5, 5, 0"/>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Margin="10" Background="#807F7F" Content="Начать прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.StartAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+            <Button Grid.Column="1" Margin="10" Background="#807F7F" Content="Отменить запись" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.CancelMissedAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+        </Grid>
+    </Grid>
+</UserControl>

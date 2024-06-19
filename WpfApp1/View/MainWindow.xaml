@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
         Title="MainWindow" 
         Height="Auto" Width="1500" MinWidth="427" MinHeight="718"
@@ -93,99 +92,13 @@
                         </Border>
                         <!-- Записи -->
                         <Grid Grid.Row="1" Margin="10">
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <!-- Завершенная запись -->
-                            <Grid>
-                                <ItemsControl ItemsSource="{Binding CompletedAppointments}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Background="{DynamicResource MainColorBrush}">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="50*"/>
-                                                    <RowDefinition Height="50*"/>
-                                                </Grid.RowDefinitions>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Label Grid.Column="0" Content="{Binding FullName}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" Margin="5, 5, 0, 0" VerticalAlignment="Center"/>
-                                                    <Label Grid.Column="1" Content="{Binding AppointmentTime}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Right" Margin="0, 5, 5, 0"/>
-                                                </Grid>
-                                                <Grid Grid.Row="1">
-                                                    <Button IsEnabled="False" Grid.Column="0" Margin="10" Background="#E8EAED" Content="Запись завершена" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent"/>
-                                                </Grid>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Grid>
-                            <!-- Пропущенная запись -->
-                            <Grid Margin="0, 0, 0, -10" Grid.Row="1">
-                                <ItemsControl ItemsSource="{Binding MissedAppointments}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Background="{DynamicResource MainColorBrush}" Margin="0, 10, 0, 0" Grid.Row="1">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="50*"/>
-                                                    <RowDefinition Height="50*"/>
-                                                </Grid.RowDefinitions>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Label Grid.Column="0" Content="{Binding FullName}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" Margin="5, 5, 0, 0" VerticalAlignment="Center"/>
-                                                    <Label Grid.Column="1" Content="{Binding AppointmentTime}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Right" Margin="0, 5, 5, 0"/>
-                                                </Grid>
-                                                <Grid Grid.Row="1">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition/>
-                                                        <ColumnDefinition/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Button Grid.Column="0" Margin="10" Background="#807F7F" Content="Начать прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.StartAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
-                                                    <Button Grid.Column="1" Margin="10" Background="#807F7F" Content="Отменить запись" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.CancelMissedAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
-                                                </Grid>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Grid>
-                            <!-- Действующая запись -->
-                            <Grid Grid.Row="2" Margin="0, 10, 0, 0">
-                                <ItemsControl ItemsSource="{Binding CurrentAppointments}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Background="{DynamicResource MainColorBrush}" Margin="0, 10, 0, 0">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="50*"/>
-                                                    <RowDefinition Height="50*"/>
-                                                </Grid.RowDefinitions>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Label Grid.Column="0" Content="{Binding FullName}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" Margin="5, 5, 0, 0"/>
-                                                    <Label Grid.Column="1" Content="{Binding AppointmentTime}" FontFamily="Inter" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Right" Margin="0, 5, 5, 0"/>
-                                                </Grid>
-                                                <Grid Grid.Row="1">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition/>
-                                                        <ColumnDefinition/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="Начать прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.StartAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
-                                                    <Button Grid.Column="1" Margin="10" Background="#FE0000" Content="Отменить запись" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Command="{Binding DataContext.CancelAppointmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
-                                                </Grid>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Grid>
+                            <ItemsControl ItemsSource="{Binding AppointmentCards}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </Grid>
                         <!-- Кнопка выйти из аккаунта -->
                         <Grid Grid.Row="4" Margin="10, 30, 10, 10" materialDesign:ButtonAssist.CornerRadius="0">
