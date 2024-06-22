@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -11,7 +12,7 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
+            DataContext = new MainWindowViewModel(AnalysisRTB, ResearchRTB);
         }
         #region TitleBar
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)

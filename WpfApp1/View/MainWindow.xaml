@@ -227,8 +227,8 @@
                                 <ColumnDefinition Width="80*"/>
                                 <ColumnDefinition Width="20*"/>
                             </Grid.ColumnDefinitions>
-                            <ComboBox Grid.Column="0" BorderBrush="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" MinHeight="25" FontFamily="Inter" VerticalContentAlignment="Center" materialDesign:HintAssist.Hint="Специальность врача" FontSize="14" Padding="5" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0, 0, 15, 0"/>
-                            <Button Margin="15, 0, 0, 0" Grid.Column="1" Background="#007BFE" Content="Добавить направление" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Height="Auto"/>
+                            <ComboBox ItemsSource="{Binding SpecialitiesList}" SelectedValue="{Binding SelectedSpecialityId}"  DisplayMemberPath="Name" Grid.Column="0" BorderBrush="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" MinHeight="25" FontFamily="Inter" VerticalContentAlignment="Center" materialDesign:HintAssist.Hint="Специальность врача" FontSize="14" Padding="5" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0, 0, 15, 0"/>
+                            <Button Command="{Binding AddDirectionCommand}" Margin="15, 0, 0, 0" Grid.Column="1" Background="#007BFE" Content="Добавить направление" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" Height="Auto"/>
                         </Grid>
                     </Grid>
                     <Grid Margin="10" Grid.Row="8" Background="{DynamicResource SecondaryBackgroundBrush}">
@@ -240,8 +240,8 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding Path=., StringFormat='Направление к специалисту: {0}'}" VerticalAlignment="Center" FontFamily="Inter" Padding="20, 0, 0, 0" FontSize="14" Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource MainColorBrush}"/>
-                                        <Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent" Foreground="#FE0000" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Path=Name, StringFormat='Направление к специалисту: {0}'}" VerticalAlignment="Center" FontFamily="Inter" Padding="20, 0, 0, 0" FontSize="14" Foreground="{DynamicResource PrimaryTextBrush}" Background="{DynamicResource MainColorBrush}"/>
+                                        <Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent" Foreground="#FE0000" VerticalAlignment="Center" Command="{Binding DataContext.DeleteDirectionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding IdDirection}">
                                             <materialDesign:PackIcon Kind="TrashCanOutline" Height="24" Width="24"/>
                                         </Button>
                                     </Grid>
@@ -259,7 +259,7 @@
                     </Grid>
                     
                     <Grid Margin="10" Grid.Row="10">
-                        <RichTextBox x:Name="AnalysisRTB" Foreground="{DynamicResource PrimaryTextBrush}" Margin="10,0,-10,0" BorderBrush="Transparent" Visibility="{Binding AnalysisRTBVisibility}">
+                        <RichTextBox  x:Name="AnalysisRTB" Foreground="{DynamicResource PrimaryTextBrush}" Margin="10,0,-10,0" BorderBrush="Transparent" Visibility="{Binding AnalysisRTBVisibility}">
                             <RichTextBox.Document>
                                 <FlowDocument>
                                     <!-- Дата приема -->
@@ -364,7 +364,7 @@
                         <TextBox Grid.Column="1" BorderBrush="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" MinHeight="20" Height="Auto" FontFamily="Inter" VerticalContentAlignment="Center" materialDesign:HintAssist.Hint="Наименование исследования" FontSize="14" Padding="5" Foreground="{DynamicResource SecondaryTextBrush}" Margin="15, 0, 0, 0"/>
                     </Grid>
                     <Grid Margin="10" Grid.Row="12">
-                        <RichTextBox Foreground="{DynamicResource PrimaryTextBrush}" BorderBrush="Transparent" Visibility="{Binding ResearchRTBVisibility}">
+                        <RichTextBox x:Name="ResearchRTB" Foreground="{DynamicResource PrimaryTextBrush}" BorderBrush="Transparent" Visibility="{Binding ResearchRTBVisibility}">
                             <FlowDocument>
                                 <Paragraph>
                                     <Run Text="Дата: " FontWeight="Bold"/>
@@ -420,7 +420,7 @@
                         </RichTextBox>
                     </Grid>
                     <Grid Margin="10" Grid.Row="13" Visibility="{Binding AttachFilesButton}">
-                        <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="Прикрепить дополнительные файлы" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" FontSize="16"/>
+                        <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="{Binding AttachFileButton}" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" FontSize="16" Command="{Binding AttachFileCommand}"/>
                     </Grid>
                     <Grid Margin="10" Grid.Row="14">
                         <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="Завершить прием" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" FontSize="16" Command="{Binding CompleteTheAppointmentCommand}"/>

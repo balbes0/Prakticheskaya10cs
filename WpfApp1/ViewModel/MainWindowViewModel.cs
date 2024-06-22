@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 using System.Data;
 using WpfApp1.View.Cards;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using System.IO;
+using Microsoft.Win32;
 
 namespace WpfApp1.ViewModel
 {
@@ -14,24 +17,64 @@ namespace WpfApp1.ViewModel
     {
         private string port = "7107";
         private bool isDarkTheme = false;
-        public MainWindowViewModel()
+        private Appointment currentAppointment;
+        private RichTextBox analysisRTB;
+        private RichTextBox researchRTB;
+        byte[] fileBytes = null;
+        public MainWindowViewModel(RichTextBox analysisRTB, RichTextBox researchRTB)
         {
-            SwitchThemeCommand = new BindableCommand(_ => SwitchTheme()); //направления пример
-            AnalysisComboBoxCommand = new BindableCommand(_ => AnalysisRTB()); //направления пример
-            ResearchComboBoxCommand = new BindableCommand(_ => ResearchRTB());
-            StartAppointmentCommand = new BindableCommand(ShowOMS);
+            this.analysisRTB = analysisRTB;
+            this.researchRTB = researchRTB;
+            SwitchThemeCommand = new BindableCommand(_ => SwitchTheme()); //изменить тему приложения
+            AnalysisComboBoxCommand = new BindableCommand(_ => AnalysisRTB()); //показать/убрать анализы
+            ResearchComboBoxCommand = new BindableCommand(_ => ResearchRTB()); //показать/убрать исследования
+            StartAppointmentCommand = new BindableCommand(ShowOMS); //для открытия карточки пациента
             CancelAppointmentCommand = new BindableCommand(CancelAppointment); //кнопка отменить запись
-            CancelMissedAppointmentCommand = new BindableCommand(CancelMissedAppointment);
+            CancelMissedAppointmentCommand = new BindableCommand(CancelMissedAppointment); //отменить пропущенную запись
             CompleteTheAppointmentCommand = new BindableCommand(_ => CompleteTheAppointment()); //кнопка завершить прием
+            DeleteDirectionCommand = new BindableCommand(DeleteDirection); //удалить направление пациента
+            AddDirectionCommand = new BindableCommand(_ => AddDirection());
+            AttachFileCommand = new BindableCommand(_ => AttachFile());
             LogoutCommand = new BindableCommand(_ => Logout()); //кнопка выйти из аккаунта
             analysisRTBVisibility = Visibility.Collapsed; //РТБ с анализами по дефолту скрыта
             researchRTBVisibility = Visibility.Collapsed; //РТБ с исследованиями по дефолту скрыта
             AttachFilesButton = Visibility.Collapsed; //Кнопка прикрепить файлы по дефолту скрыта
             MainVisibility = Visibility.Hidden;
             UpdateCurrentAppointments();
+
+            var json = ApiHelper.Get($"https://localhost:{port}/api/Specialities");
+            var result = JsonConvert.DeserializeObject<List<Speciality>>(json);
+            SpecialitiesList = new List<Speciality>(result);
         }
 
         #region Свойства
+        #region Список_специальностей
+        private List<Speciality> specialitiesList;
+        public List<Speciality> SpecialitiesList
+        {
+            get { return specialitiesList; }
+            set
+            {
+                specialitiesList = value;
+                OnPropertyChanged(nameof(SpecialitiesList));
+            }
+        }
+
+        #region Выбранное_направление
+        private Speciality selectedSpecialityId;
+        public Speciality SelectedSpecialityId
+        {
+            get { return selectedSpecialityId; }
+            set
+            {
+                selectedSpecialityId = value;
+                OnPropertyChanged(nameof(SelectedSpecialityId));
+            }
+        }
+        #endregion
+
+        #endregion
+
         #region Список_записей
         private ObservableCollection<Appointment> currentAppointments;
         public ObservableCollection<Appointment> CurrentAppointments
@@ -88,6 +131,19 @@ namespace WpfApp1.ViewModel
             }
         }
 
+        #endregion
+
+        #region Кнопка прикрепить файлы
+        private string attachFileButton = "Прикрепить дополнительные файлы";
+        public string AttachFileButton
+        {
+            get { return attachFileButton; }
+            set
+            {
+                attachFileButton = value;
+                OnPropertyChanged(nameof(AttachFileButton));
+            }
+        }
         #endregion
 
         #region Имя_пациента
@@ -219,8 +275,8 @@ namespace WpfApp1.ViewModel
         #endregion
 
         #region Список_направлений
-        private List<string> directions = new List<string>();
-        public List<string> Directions
+        private ObservableCollection<DirectionsWithSpecialistDetails> directions;
+        public ObservableCollection<DirectionsWithSpecialistDetails> Directions
         {
             get { return directions; }
             set
@@ -242,7 +298,69 @@ namespace WpfApp1.ViewModel
         public BindableCommand CancelMissedAppointmentCommand { get; set; }
         public BindableCommand CompleteTheAppointmentCommand { get; set; }
         public BindableCommand LogoutCommand { get; set; }
+        public BindableCommand DeleteDirectionCommand { get; set; }
+        public BindableCommand AddDirectionCommand { get; set; }
+        public BindableCommand AttachFileCommand { get; set; }
         #endregion
+
+        private void AttachFile()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                using (var fileStream = new FileStream(openFileDialog.FileName, FileMode.Open, FileAccess.Read))
+                {
+                    using (var binaryReader = new BinaryReader(fileStream))
+                    {
+                        fileBytes = binaryReader.ReadBytes((int)fileStream.Length);
+                        AttachFileButton = $"Прикреплен файл: {Path.GetFileName(openFileDialog.FileName)}";
+                    }
+                }
+            }
+        }
+
+        private void AddDirection()
+        {
+            Direction direction = new Direction
+            {
+                Oms = currentAppointment.OMS,
+                SpecialityId = SelectedSpecialityId.IdSpeciality
+            };
+
+            bool flag = true;
+            foreach (var item in Directions)
+            {
+                if (item.SpecialityId == SelectedSpecialityId.IdSpeciality)
+                {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag)
+            {
+                string json = JsonConvert.SerializeObject(direction);
+                ApiHelper.Post($"https://localhost:{port}/api/Directions", json);
+                GetDirections();
+            }
+            else
+            {
+                MessageBox.Show("Такое направление уже имеется!");
+            }
+        }
+
+        private void DeleteDirection(object parameter)
+        {
+            if (parameter is int idDirection)
+            {
+                ApiHelper.Delete($"https://localhost:{port}/api/Directions/{idDirection}");
+                var directionToDelete = Directions.FirstOrDefault(d => d.IdDirection == idDirection);
+                if (directionToDelete != null)
+                {
+                    Directions.Remove(directionToDelete);
+                }
+                MessageBox.Show($"Направление удалено!");
+            }
+        }
 
         private void UpdateCurrentAppointments() //метод для обновления списка записей
         {
@@ -300,15 +418,79 @@ namespace WpfApp1.ViewModel
             AppointmentCards = appointmentCards;
         }
 
+        private void SaveAnalysDocument()
+        {
+            TextRange textRange = new TextRange(analysisRTB.Document.ContentStart, analysisRTB.Document.ContentEnd);
+            string rtfText;
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                textRange.Save(memoryStream, DataFormats.Rtf);
+                rtfText = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
+            }
+            AnalysDocument analysDocument = new AnalysDocument
+            {
+                AppointmentId = currentAppointment.IdAppointment,
+                Rtf = rtfText
+            };
+            string json = JsonConvert.SerializeObject(analysDocument);
+            ApiHelper.Post($"https://localhost:{port}/api/AnalysDocuments", json);
+        }
+
+        private void SaveResearchDocument()
+        {
+            TextRange textRange = new TextRange(researchRTB.Document.ContentStart, researchRTB.Document.ContentEnd);
+            string rtfText;
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                textRange.Save(memoryStream, DataFormats.Rtf);
+                rtfText = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
+            }
+            ResearchDocument researchDocument = new ResearchDocument();
+            researchDocument.AppointmentId = currentAppointment.IdAppointment;
+            researchDocument.Rtf = rtfText;
+            if (fileBytes == null)
+            {
+                researchDocument.Attachment = null;
+            }
+            else
+            {
+                researchDocument.Attachment = fileBytes;
+            }
+
+            string json = JsonConvert.SerializeObject(researchDocument);
+            ApiHelper.Post($"https://localhost:{port}/api/ResearchDocuments", json);
+        }
 
         private void CompleteTheAppointment() //завершение приема
         {
-            MainVisibility = Visibility.Collapsed;
-            PatientName = string.Empty;
-            OMS = string.Empty;
+            if (currentAppointment != null)
+            {
+                ApiHelper.PostWithoutJson($"https://localhost:{port}/api/Appointments/Complete/{currentAppointment.IdAppointment}");//меняем статус записи на завершенный
+
+                if (AnalysisCheckBox == true)
+                {
+                    SaveAnalysDocument();
+                }
+
+                if (ResearchCheckBox == true)
+                {
+                    SaveResearchDocument();
+                }
+
+                MessageBox.Show("Запись завершена!");
+
+                currentAppointment = null;
+                MainVisibility = Visibility.Collapsed;
+                Directions = null;
+                PatientName = string.Empty;
+                OMS = string.Empty;
+                byte[] fileBytes = null;
+                attachFileButton = "Прикрепить дополнительные файлы";
+                UpdateCurrentAppointments();
+            }
         }
 
-        private void Logout()
+        private void Logout() //кнопка выйти из аккаунта
         {
             MessageBox.Show("типо вышел из аккаунта");
         }
@@ -317,8 +499,9 @@ namespace WpfApp1.ViewModel
         {
             if (parameter is Appointment appointment)
             {
-                /*MissedAppointments.Remove(appointment);*/
-                MessageBox.Show($"OMS: {appointment.IdAppointment}");
+                ApiHelper.PostWithoutJson($"https://localhost:{port}/api/Appointments/Cancel/{appointment.IdAppointment}");
+                MessageBox.Show("Запись отменена!");
+                UpdateCurrentAppointments();
             }
         }
 
@@ -326,22 +509,27 @@ namespace WpfApp1.ViewModel
         {
             if (parameter is Appointment appointment)
             {
-                /*CurrentAppointments.Remove(appointment);*/
-                MessageBox.Show($"Запись для {appointment.IdAppointment}");
+                ApiHelper.PostWithoutJson($"https://localhost:{port}/api/Appointments/Cancel/{appointment.IdAppointment}");
+                MessageBox.Show("Запись отменена!");
+                UpdateCurrentAppointments();
             }
+        }
+
+        private void GetDirections() //Получаем список направлений пациента
+        {
+            var json = ApiHelper.Get($"https://localhost:{port}/api/Directions/WithSpecialistDetails?_oms={currentAppointment.OMS}");
+            var result = JsonConvert.DeserializeObject<List<DirectionsWithSpecialistDetails>>(json);
+            Directions = new ObservableCollection<DirectionsWithSpecialistDetails>(result);
         }
 
         private void ShowOMS(object parameter) //прием записи
         {
             if (parameter is Appointment appointment)
             {
-                var json = ApiHelper.Get($"https://localhost:{port}/api/Directions/WithSpecialistDetails?_oms={appointment.OMS}");
-                var result = JsonConvert.DeserializeObject<List<DirectionsWithSpecialistDetails>>(json);
-
-                Directions = result.Select(item => item.Name).ToList();
-
-                PatientName = $"Пациент: {appointment.OMS}";
-                OMS = $"{appointment.OMS:0000 0000 0000 0000}";
+                currentAppointment = appointment;
+                GetDirections();
+                PatientName = $"Пациент: {currentAppointment.FirstName} {currentAppointment.LastName} {currentAppointment.Patronymic}";
+                OMS = $"{currentAppointment.OMS:0000 0000 0000 0000}";
                 MainVisibility = Visibility.Visible;
             }
         }
