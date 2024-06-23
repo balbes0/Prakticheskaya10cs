@@ -9,10 +9,11 @@ namespace WpfApp1
 {
     public partial class MainWindow : Window
     {
+        int ID_Doctor = 1; //типо получил айди доктора из окна авторизации
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel(AnalysisRTB, ResearchRTB);
+            DataContext = new MainWindowViewModel(AnalysisRTB, ResearchRTB, AppointmentRTB, ID_Doctor);
         }
         #region TitleBar
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)

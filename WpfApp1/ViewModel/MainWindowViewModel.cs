@@ -18,13 +18,27 @@ namespace WpfApp1.ViewModel
         private string port = "7107";
         private bool isDarkTheme = false;
         private Appointment currentAppointment;
+        private DoctorWithSpecialityName currentDoctor;
+        private readonly string defaultAnalysisRTBText;
+        private readonly string defaultResearchRTBText;
+        private readonly string defaultAppointmentRTBText;
         private RichTextBox analysisRTB;
         private RichTextBox researchRTB;
+        private RichTextBox appointmentRTB;
         byte[] fileBytes = null;
-        public MainWindowViewModel(RichTextBox analysisRTB, RichTextBox researchRTB)
+
+        public MainWindowViewModel(RichTextBox analysisRTB, RichTextBox researchRTB, RichTextBox appointmentRTB, int id_doctor)
         {
+            GetDoctorDetailsByID(id_doctor);
+            titleName = $"ЕМИАС — {currentDoctor.Surname} {currentDoctor.Name} {currentDoctor.Patronymic}";
+            specialityName = currentDoctor.SpecialityName;
+            doctorInitials = $"{currentDoctor.Surname} {currentDoctor.Name[0]}. {currentDoctor.Patronymic[0]}.";
             this.analysisRTB = analysisRTB;
             this.researchRTB = researchRTB;
+            this.appointmentRTB = appointmentRTB;
+
+            analysisRTB = researchRTB;
+
             SwitchThemeCommand = new BindableCommand(_ => SwitchTheme()); //изменить тему приложения
             AnalysisComboBoxCommand = new BindableCommand(_ => AnalysisRTB()); //показать/убрать анализы
             ResearchComboBoxCommand = new BindableCommand(_ => ResearchRTB()); //показать/убрать исследования
@@ -40,11 +54,9 @@ namespace WpfApp1.ViewModel
             researchRTBVisibility = Visibility.Collapsed; //РТБ с исследованиями по дефолту скрыта
             AttachFilesButton = Visibility.Collapsed; //Кнопка прикрепить файлы по дефолту скрыта
             MainVisibility = Visibility.Hidden;
-            UpdateCurrentAppointments();
 
-            var json = ApiHelper.Get($"https://localhost:{port}/api/Specialities");
-            var result = JsonConvert.DeserializeObject<List<Speciality>>(json);
-            SpecialitiesList = new List<Speciality>(result);
+            UpdateCurrentAppointments();
+            GetSpecialitiesList();
         }
 
         #region Свойства
@@ -259,6 +271,20 @@ namespace WpfApp1.ViewModel
                 }
             }
         }
+
+        private string _dateNow = DateTime.Now.ToString("D");
+        public string _DateNow
+        {
+            get { return _dateNow; }
+            set
+            {
+                if (_dateNow != value)
+                {
+                    _dateNow = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         #endregion
 
         #region Кнопка_смена_темы_иконка
@@ -287,8 +313,153 @@ namespace WpfApp1.ViewModel
         }
         #endregion
 
+        #region Название анализа и исследования
+        private string analysisName;
+        public string AnalysisName
+        {
+            get { return analysisName; }
+            set
+            {
+                analysisName = value;
+                OnPropertyChanged();
+            }
+        }        
+        
+        private string researchName;
+        public string ResearchName
+        {
+            get { return researchName; }
+            set
+            {
+                researchName = value;
+                OnPropertyChanged();
+            }
+        }
         #endregion
 
+        #region Диагноз
+        private string diagnosis;
+        public string Diagnosis
+        {
+            get { return diagnosis; }
+            set
+            {
+                if (diagnosis != value)
+                {
+                    diagnosis = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion
+        #region Жалобы
+        private string complaints;
+        public string Complaints
+        {
+            get { return complaints; }
+            set
+            {
+                if (complaints != value)
+                {
+                    complaints = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion        
+        #region Общий осмотр
+        private string examination;
+        public string Examination
+        {
+            get { return examination; }
+            set
+            {
+                if (examination != value)
+                {
+                    examination = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion        
+        #region Рекомендации
+        private string recommendations;
+        public string Recommendations
+        {
+            get { return recommendations; }
+            set
+            {
+                if (recommendations != value)
+                {
+                    recommendations = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion        
+        #region Дополнения к диагнозу
+        private string additionsDiagnosis;
+        public string AdditionsDiagnosis
+        {
+            get { return additionsDiagnosis; }
+            set
+            {
+                if (additionsDiagnosis != value)
+                {
+                    additionsDiagnosis = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion        
+        #region Инициалы доктора
+        private string doctorInitials;
+        public string DoctorInitials
+        {
+            get { return doctorInitials; }
+            set
+            {
+                if (doctorInitials != value)
+                {
+                    doctorInitials = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion
+        #region Специальность врача
+        private string specialityName;
+        public string SpecialityName
+        {
+            get { return specialityName; }
+            set
+            {
+                if (specialityName != value)
+                {
+                    specialityName = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion
+
+        #region Название титла
+        private string titleName;
+        public string TitleName
+        {
+            get { return titleName; }
+            set
+            {
+                if (titleName != value)
+                {
+                    titleName = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion
+
+        #endregion
         #region Команды
         public BindableCommand SwitchThemeCommand { get; set; }
         public BindableCommand AnalysisComboBoxCommand { get; set; }
@@ -302,6 +473,20 @@ namespace WpfApp1.ViewModel
         public BindableCommand AddDirectionCommand { get; set; }
         public BindableCommand AttachFileCommand { get; set; }
         #endregion
+
+        private void GetDoctorDetailsByID(int id_doctor)
+        {
+            var json = ApiHelper.Get($"https://localhost:{port}/api/Doctors/WithSpecialityName?id={id_doctor}");
+            var result = JsonConvert.DeserializeObject<DoctorWithSpecialityName>(json);
+            currentDoctor = result;
+        }
+
+        private void GetSpecialitiesList() //получения списка специалностей врачей
+        {
+            var json = ApiHelper.Get($"https://localhost:{port}/api/Specialities");
+            var result = JsonConvert.DeserializeObject<List<Speciality>>(json);
+            SpecialitiesList = new List<Speciality>(result);
+        }
 
         private void AttachFile()
         {
@@ -436,6 +621,24 @@ namespace WpfApp1.ViewModel
             ApiHelper.Post($"https://localhost:{port}/api/AnalysDocuments", json);
         }
 
+        private void SaveAppointmentDocument()
+        {
+            TextRange textRange = new TextRange(appointmentRTB.Document.ContentStart, appointmentRTB.Document.ContentEnd);
+            string rtfText;
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                textRange.Save(memoryStream, DataFormats.Rtf);
+                rtfText = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
+            }
+            AppointmentDocument appointmentDocument = new AppointmentDocument
+            {
+                AppointmentId = currentAppointment.IdAppointment,
+                Rtf = rtfText
+            };
+            string json = JsonConvert.SerializeObject(appointmentDocument);
+            ApiHelper.Post($"https://localhost:{port}/api/AppointmentDocuments", json);
+        }
+
         private void SaveResearchDocument()
         {
             TextRange textRange = new TextRange(researchRTB.Document.ContentStart, researchRTB.Document.ContentEnd);
@@ -461,11 +664,29 @@ namespace WpfApp1.ViewModel
             ApiHelper.Post($"https://localhost:{port}/api/ResearchDocuments", json);
         }
 
+        private void ClearingFields() //очистка всех полек
+        {
+            currentAppointment = null;
+            MainVisibility = Visibility.Collapsed;
+            Directions = null;
+            PatientName = string.Empty;
+            OMS = string.Empty;
+            byte[] fileBytes = null;
+            attachFileButton = "Прикрепить дополнительные файлы";
+            Complaints = string.Empty;
+            Examination = string.Empty;
+            Diagnosis = string.Empty;
+            AdditionsDiagnosis = string.Empty;
+            Recommendations = string.Empty;
+            AnalysisName = string.Empty;
+            ResearchName = string.Empty;
+        }
+
         private void CompleteTheAppointment() //завершение приема
         {
             if (currentAppointment != null)
             {
-                ApiHelper.PostWithoutJson($"https://localhost:{port}/api/Appointments/Complete/{currentAppointment.IdAppointment}");//меняем статус записи на завершенный
+                /*ApiHelper.PostWithoutJson($"https://localhost:{port}/api/Appointments/Complete/{currentAppointment.IdAppointment}");//меняем статус записи на завершен.
 
                 if (AnalysisCheckBox == true)
                 {
@@ -477,19 +698,15 @@ namespace WpfApp1.ViewModel
                     SaveResearchDocument();
                 }
 
+                SaveAppointmentDocument();
+
                 MessageBox.Show("Запись завершена!");
 
-                currentAppointment = null;
-                MainVisibility = Visibility.Collapsed;
-                Directions = null;
-                PatientName = string.Empty;
-                OMS = string.Empty;
-                byte[] fileBytes = null;
-                attachFileButton = "Прикрепить дополнительные файлы";
-                UpdateCurrentAppointments();
+                ClearingFields();
+                UpdateCurrentAppointments();*/
             }
         }
-
+        
         private void Logout() //кнопка выйти из аккаунта
         {
             MessageBox.Show("типо вышел из аккаунта");
@@ -526,11 +743,18 @@ namespace WpfApp1.ViewModel
         {
             if (parameter is Appointment appointment)
             {
-                currentAppointment = appointment;
-                GetDirections();
-                PatientName = $"Пациент: {currentAppointment.FirstName} {currentAppointment.LastName} {currentAppointment.Patronymic}";
-                OMS = $"{currentAppointment.OMS:0000 0000 0000 0000}";
-                MainVisibility = Visibility.Visible;
+                if (currentAppointment == null)
+                {
+                    currentAppointment = appointment;
+                    GetDirections();
+                    PatientName = $"Пациент: {currentAppointment.FirstName} {currentAppointment.LastName} {currentAppointment.Patronymic}";
+                    OMS = $"{currentAppointment.OMS:0000 0000 0000 0000}";
+                    MainVisibility = Visibility.Visible;
+                }
+                else if (currentAppointment != null)
+                {
+                    MessageBox.Show("Сначала завершите прием!");
+                }
             }
         }
 
