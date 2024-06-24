@@ -19,15 +19,12 @@ namespace WpfApp1.ViewModel
         private bool isDarkTheme = false;
         private Appointment currentAppointment;
         private DoctorWithSpecialityName currentDoctor;
-        private readonly string defaultAnalysisRTBText;
-        private readonly string defaultResearchRTBText;
-        private readonly string defaultAppointmentRTBText;
         private RichTextBox analysisRTB;
         private RichTextBox researchRTB;
         private RichTextBox appointmentRTB;
         byte[] fileBytes = null;
 
-        public MainWindowViewModel(RichTextBox analysisRTB, RichTextBox researchRTB, RichTextBox appointmentRTB, int id_doctor)
+        public MainWindowViewModel(RichTextBox appointmentRTB, int id_doctor)
         {
             GetDoctorDetailsByID(id_doctor);
             titleName = $"ЕМИАС — {currentDoctor.Surname} {currentDoctor.Name} {currentDoctor.Patronymic}";
@@ -36,8 +33,6 @@ namespace WpfApp1.ViewModel
             this.analysisRTB = analysisRTB;
             this.researchRTB = researchRTB;
             this.appointmentRTB = appointmentRTB;
-
-            analysisRTB = researchRTB;
 
             SwitchThemeCommand = new BindableCommand(_ => SwitchTheme()); //изменить тему приложения
             AnalysisComboBoxCommand = new BindableCommand(_ => AnalysisRTB()); //показать/убрать анализы
@@ -85,6 +80,32 @@ namespace WpfApp1.ViewModel
         }
         #endregion
 
+        #endregion
+
+        #region Исследования
+        private UserControl _RTBResearch;
+        public UserControl RTBResearch
+        {
+            get { return _RTBResearch; }
+            set
+            {
+                _RTBResearch = value;
+                OnPropertyChanged(nameof(RTBResearch));
+            }
+        }
+        #endregion
+
+        #region Анализы_ртб
+        private UserControl _RTBAnalysis;
+        public UserControl RTBAnalysis
+        {
+            get { return _RTBAnalysis; }
+            set
+            {
+                _RTBAnalysis = value;
+                OnPropertyChanged(nameof(RTBAnalysis));
+            }
+        }
         #endregion
 
         #region Список_записей
@@ -704,6 +725,9 @@ namespace WpfApp1.ViewModel
 
                 ClearingFields();
                 UpdateCurrentAppointments();*/
+
+                RichTextBox rtb = new RichTextBox();
+                analysisRTB = rtb;
             }
         }
         
@@ -750,6 +774,28 @@ namespace WpfApp1.ViewModel
                     PatientName = $"Пациент: {currentAppointment.FirstName} {currentAppointment.LastName} {currentAppointment.Patronymic}";
                     OMS = $"{currentAppointment.OMS:0000 0000 0000 0000}";
                     MainVisibility = Visibility.Visible;
+
+                    var analysisRichTextBox = new AnalysisRichTextBox
+                    {
+                        _DateNow = _DateNow,
+                        OMS = OMS
+                    };
+                    var analysisrichTextBoxView = new AnalysisRichTextBoxView(analysisRichTextBox);
+                    RTBAnalysis = analysisrichTextBoxView;
+                    analysisRTB = analysisrichTextBoxView.AnalysisRTB;
+
+                    var researchRichTextBox = new ResearchRichTextBox
+                    {
+                        _DateNow = _DateNow,
+                        OMS = OMS,
+                        Diagnosis = Diagnosis
+                    };
+                    var researchrichTextBoxView = new ResearchRichTextBoxView(researchRichTextBox);
+                    RTBResearch = researchrichTextBoxView;
+                    researchRTB = researchrichTextBoxView.ResearchRTB;
+
+                    AppointmentRichTextBoxView appointmentRichTextBoxView = new AppointmentRichTextBoxView();
+                    appointmentRTB = appointmentRichTextBoxView.AppointmentRTB; 
                 }
                 else if (currentAppointment != null)
                 {

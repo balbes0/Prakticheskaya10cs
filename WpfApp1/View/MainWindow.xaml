@@ -95,9 +95,7 @@
                         <Grid Grid.Row="1" Margin="10">
                             <ItemsControl ItemsSource="{Binding AppointmentCards}">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        
-                                    </DataTemplate>
+                                    <DataTemplate/>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </Grid>
@@ -141,8 +139,6 @@
                         <!-- 13: Прикрепить файлы (кнопка) -->
                         <RowDefinition Height="Auto"/>
                         <!-- 14: Завершить прием (кнопка) -->
-                        <RowDefinition Height="Auto"/>
-                        <!-- 15: Скрытый ртб для сохранения документа о приеме -->
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="10">
                         <Grid.ColumnDefinitions>
@@ -260,101 +256,8 @@
                         <CheckBox Grid.Column="0" MinHeight="18" MinWidth="18" Content="Анализ:" FontFamily="Inter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource PrimaryTextBrush}" IsChecked="{Binding AnalysisCheckBox}" Command="{Binding AnalysisComboBoxCommand}"/>
                         <TextBox Text="{Binding AnalysisName}" Grid.Column="1" BorderBrush="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" MinHeight="20" Height="Auto" FontFamily="Inter" VerticalContentAlignment="Center" materialDesign:HintAssist.Hint="Наименование анализа" FontSize="14" Padding="5" Foreground="{DynamicResource SecondaryTextBrush}" Margin="15, 0, 0, 0"/>
                     </Grid>
-                    <Grid Margin="10" Grid.Row="10">
-                        <RichTextBox x:Name="AnalysisRTB" Foreground="{DynamicResource PrimaryTextBrush}" Margin="10,0,-10,0" BorderBrush="Transparent" Visibility="{Binding AnalysisRTBVisibility}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                            <FlowDocument DataContext="{Binding RichTextBoxDocument}">
-                                <!-- Дата приема -->
-                                <Paragraph>
-                                    <Run FontWeight="Bold">Дата:</Run>
-                                    <Run Text="{Binding _DateNow}"/>
-                                </Paragraph>
-
-                                <!-- Полис ОМС -->
-                                <Paragraph>
-                                    <Run FontWeight="Bold">Полис ОМС:</Run>
-                                    <Run Text="{Binding OMS}"/>
-                                </Paragraph>
-
-                                <!-- Название теста -->
-                                <Paragraph FontSize="16" TextAlignment="Center" Margin="0,0,0,5">
-                                    <Run Text="ИССЛЕДОВАНИЕ «НАЗВАНИЕ ТЕСТА»"/>
-                                </Paragraph>
-                                <Paragraph TextAlignment="Center" FontSize="10" Margin="0,0,0,5">
-                                    КЛИНИКО-ДИАГНОСТИЧЕСКАЯ ЛАБОРАТОРИЯ
-                                </Paragraph>
-                                <!-- Результаты лабораторных исследований -->
-                                <Paragraph FontSize="20" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,10">
-                                    РЕЗУЛЬТАТЫ ЛАБОРАТОРНЫХ ИССЛЕДОВАНИЙ
-                                </Paragraph>
-
-                                <!-- Название теста -->
-                                <Paragraph>
-                                    <Run Text="«Название теста»"/>
-                                </Paragraph>
-
-                                <!-- Биоматериал -->
-                                <Paragraph>
-                                    <Run FontWeight="Bold">Биоматериал:</Run>
-                                    <Run Text="«Биоматериал»"/>
-                                </Paragraph>
-                                <!-- Таблица -->
-                                <BlockUIContainer>
-                                    
-                                </BlockUIContainer>
-                                <Table CellSpacing="0" TextAlignment="Center">
-                                    <Table.Columns>
-                                        <TableColumn Width="175"/>
-                                        <TableColumn Width="175"/>
-                                        <TableColumn Width="175"/>
-                                        <TableColumn Width="175"/>
-                                        <TableColumn Width="175"/>
-                                        <TableColumn Width="175"/>
-                                    </Table.Columns>
-                                    <TableRowGroup>
-                                        <TableRow>
-                                            <TableCell BorderThickness="1" BorderBrush="Black" LineHeight="50">
-                                                <Paragraph>Тест</Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph>Результат</Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph>Норма</Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph>Отклонение</Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph>Критичность отклонения</Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph>Ед. изм.</Paragraph>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell BorderThickness="1" BorderBrush="Black" LineHeight="80">
-                                                <Paragraph></Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph></Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph></Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph></Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph></Paragraph>
-                                            </TableCell>
-                                            <TableCell BorderThickness="1" BorderBrush="Black">
-                                                <Paragraph></Paragraph>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableRowGroup>
-                                </Table>
-                            </FlowDocument>
-                        </RichTextBox>
+                    <Grid Margin="10" Grid.Row="10" Visibility="{Binding AnalysisRTBVisibility}">
+                        <ContentControl Content="{Binding RTBAnalysis}" />
                     </Grid>
                     <Grid Margin="10" Grid.Row="11">
                         <Grid.ColumnDefinitions>
@@ -364,109 +267,8 @@
                         <CheckBox Grid.Column="0" MinHeight="18" MinWidth="18" Content="Исследования:" FontFamily="Inter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{DynamicResource PrimaryTextBrush}" IsChecked="{Binding ResearchCheckBox}" Command="{Binding ResearchComboBoxCommand}"/>
                         <TextBox Text="{Binding ResearchName}" Grid.Column="1" BorderBrush="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" MinHeight="20" Height="Auto" FontFamily="Inter" VerticalContentAlignment="Center" materialDesign:HintAssist.Hint="Наименование исследования" FontSize="14" Padding="5" Foreground="{DynamicResource SecondaryTextBrush}" Margin="15, 0, 0, 0"/>
                     </Grid>
-                    <Grid Visibility="Collapsed" Grid.Row="15" Margin="10">
-                        <RichTextBox x:Name="AppointmentRTB">
-                            <FlowDocument>
-                                <Section>
-                                    <Paragraph>
-                                        Дата:
-                                        <Run Text="{Binding _DateNow}"/>
-                                    </Paragraph>
-                                    <Paragraph>
-                                        Полис ОМС: 
-                                        <Run Text="{Binding OMS}"/>
-                                    </Paragraph>
-                                    <Paragraph>
-                                        <Run>Медицинское учреждение: ГБУЗ ДКЦ 1 ДЗМ</Run>
-                                    </Paragraph>
-                                    <Paragraph>
-                                        Специализация: 
-                                        <Run Text="{Binding SpecialityName}"/>
-                                    </Paragraph>
-                                    <Paragraph>
-                                        ФИО:
-                                        <Run Text="{Binding DoctorInitials}"/>
-                                    </Paragraph>
-                                    <Paragraph FontWeight="Bold" TextAlignment="Center" FontSize="20">
-                                        Осмотр провел(а):
-                                        <Run Text="{Binding SpecialityName}"/>
-                                    </Paragraph>
-                                    <Paragraph BorderThickness="0, 1, 0, 0" BorderBrush="Black">
-                                        <Bold>Жалобы:</Bold>
-                                        <Run Text="{Binding Complaints}"/>
-                                    </Paragraph>
-                                    <Paragraph BorderBrush="Black" BorderThickness="0, 1, 0, 0">
-                                        <Bold>Общий осмотр:</Bold>
-                                        <Run Text="{Binding Examination}"/>
-                                    </Paragraph>
-                                    <Paragraph BorderBrush="Black" BorderThickness="0, 1, 0, 0">
-                                        <Bold>Основной диагноз:</Bold>
-                                        <Run Text="{Binding Diagnosis}"/>
-                                        <Bold>Дополнения: </Bold>
-                                        <Run Text="{Binding AdditionsDiagnosis}"/>
-                                    </Paragraph>
-                                    <Paragraph BorderBrush="Black" BorderThickness="0, 1, 0, 0">
-                                        <Bold>Рекомендации:</Bold>
-                                        <Run Text="{Binding Recommendations}"/>
-                                    </Paragraph>
-                                </Section>
-                            </FlowDocument>
-                        </RichTextBox>
-                    </Grid>
-                    <Grid Margin="10" Grid.Row="12">
-                        <RichTextBox x:Name="ResearchRTB" Foreground="{DynamicResource PrimaryTextBrush}" BorderBrush="Transparent" Visibility="{Binding ResearchRTBVisibility}">
-                            <FlowDocument>
-                                <Paragraph>
-                                    <Run Text="Дата: " FontWeight="Bold"/>
-                                    <Run Text="{Binding _DateNow}"/>
-                                </Paragraph>
-                                <Paragraph>
-                                    <Run Text="Полис ОМС: " FontWeight="Bold"/>
-                                    <Run Text="{Binding OMS}"/>
-                                </Paragraph>
-                                <Paragraph TextAlignment="Center" FontSize="18" FontWeight="Bold">
-                                    <Run Text="Протокол «Название исследования»"/>
-                                </Paragraph>
-                                <Paragraph BorderThickness="0,1,0,1" BorderBrush="Black" Padding="0, 10, 0, 10">
-                                    <Bold>Информация</Bold>
-                                    <LineBreak/>
-                                    <Run Text="Предварительный диагноз: " FontWeight="Bold"/>
-                                    <Run Text="{Binding Diagnosis}"/>
-                                    <LineBreak/>
-                                    <Run Text="Цель исследования: " FontWeight="Bold"/>
-                                    <Run Text="«Цель исследования»"/>
-                                    <LineBreak/>
-                                    <Run Text="Обоснование: " FontWeight="Bold"/>
-                                    <Run Text="Обоснование"/>
-                                    <LineBreak/>
-                                    <Run Text="Дата исследования: " FontWeight="Bold"/>
-                                    <Run Text="{Binding _DateNow}"/>
-                                </Paragraph>
-                                <Paragraph>
-                                    <Bold>Описание</Bold>
-                                    <LineBreak/>
-                                    <Run Text="Эндоскоп: Pentax FG-24V(NB5) Анестезия: Лидокаин спрей 10% - 3 дозы"/>
-                                    <LineBreak/>
-                                    <Run Text="ДВУ: ручной режим, раствор КСЮОН 2% ГА"/>
-                                    <LineBreak/>
-                                    <Run Text="Время проведения исследования: 15:10-15:15"/>
-                                    <LineBreak/>
-                                    <Run Text="Эндоскоп свободно проведен в пищевод. Просвет его не нарушен, перистальтика прослеживается. Слизистая пищевода светло-розовая. Зубчатая линия выражена, расположена на расстоянии 39 см от резцов, на уровне перехода пищеводного отверстия диафрагмы. Кардиа смыкается полностью, свободно проходим."/>
-                                    <LineBreak/>
-                                    <Run Text="Желудок обычных размеров и формы. В просвете желудка умеренное количество прозрачного, пенистого содержимого. Стенки эластичные, хорошо расправляются при инссуффляции воздухом. Складки обычной высоты, извиты, расположены продольно. При осмотре в инверсии кардиа плотно охватывает эндоскоп, область свода без особенностей. Слизистая желудка розовая. Привратник округлой формы, смыкается полностью, свободно проходим."/>
-                                    <LineBreak/>
-                                    <Run Text="Луковица 12-перстной кишки не деформирована, слизистая светло-розовая. Выход из луковицы свободный. Постбульбарные отделы не изменены, циркулярные складки выражены. Слизистая их светло-розовая. БДС при осмотре трофей органических изменений не выявлено."/>
-                                </Paragraph>
-                                <Paragraph BorderThickness="0,1,0,1" BorderBrush="Black" Padding="0,5">
-                                    <Run Text="Заключение " FontWeight="Bold"/>
-                                    <Run Text="Патологических изменений слизистой осмотренных органов не выявлено"/>
-                                </Paragraph>
-                                <Paragraph BorderBrush="Black">
-                                    <Run Text="Оборудование Название устройства: " FontWeight="Bold"/>
-                                    <Run Text="стойка видео-эндоскопическая (комплект), гастроскоп PENTAX FG 24V."/>
-                                </Paragraph>
-                            </FlowDocument>
-                        </RichTextBox>
+                    <Grid Margin="10" Grid.Row="12" Visibility="{Binding ResearchRTBVisibility}">
+                        <ContentControl Content="{Binding RTBResearch}" />
                     </Grid>
                     <Grid Margin="10" Grid.Row="13" Visibility="{Binding AttachFilesButton}">
                         <Button Grid.Column="0" Margin="10" Background="#007BFE" Content="{Binding AttachFileButton}" Foreground="#FFFFFF" materialDesign:ButtonAssist.CornerRadius="0" BorderBrush="Transparent" FontSize="16" Command="{Binding AttachFileCommand}"/>

@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="WpfApp1.View.Cards.ResearchRichTextBoxView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <RichTextBox x:Name="ResearchRTB" Foreground="{DynamicResource PrimaryTextBrush}" BorderBrush="Transparent" Visibility="{Binding ResearchRTBVisibility}">
+        <FlowDocument>
+            <Paragraph>
+                <Run Text="Дата: " FontWeight="Bold"/>
+                <Run Text="{Binding _DateNow}"/>
+            </Paragraph>
+            <Paragraph>
+                <Run Text="Полис ОМС: " FontWeight="Bold"/>
+                <Run Text="{Binding OMS}"/>
+            </Paragraph>
+            <Paragraph TextAlignment="Center" FontSize="18" FontWeight="Bold">
+                <Run Text="Протокол «Название исследования»"/>
+            </Paragraph>
+            <Paragraph BorderThickness="0,1,0,1" BorderBrush="Black" Padding="0, 10, 0, 10">
+                <Bold>Информация</Bold>
+                <LineBreak/>
+                <Run Text="Предварительный диагноз: " FontWeight="Bold"/>
+                <Run Text="{Binding Diagnosis}"/>
+                <LineBreak/>
+                <Run Text="Цель исследования: " FontWeight="Bold"/>
+                <Run Text="«Цель исследования»"/>
+                <LineBreak/>
+                <Run Text="Обоснование: " FontWeight="Bold"/>
+                <Run Text="Обоснование"/>
+                <LineBreak/>
+                <Run Text="Дата исследования: " FontWeight="Bold"/>
+                <Run Text="{Binding _DateNow}"/>
+            </Paragraph>
+            <Paragraph>
+                <Bold>Описание</Bold>
+                <LineBreak/>
+                <Run Text="Эндоскоп: Pentax FG-24V(NB5) Анестезия: Лидокаин спрей 10% - 3 дозы"/>
+                <LineBreak/>
+                <Run Text="ДВУ: ручной режим, раствор КСЮОН 2% ГА"/>
+                <LineBreak/>
+                <Run Text="Время проведения исследования: 15:10-15:15"/>
+                <LineBreak/>
+                <Run Text="Эндоскоп свободно проведен в пищевод. Просвет его не нарушен, перистальтика прослеживается. Слизистая пищевода светло-розовая. Зубчатая линия выражена, расположена на расстоянии 39 см от резцов, на уровне перехода пищеводного отверстия диафрагмы. Кардиа смыкается полностью, свободно проходим."/>
+                <LineBreak/>
+                <Run Text="Желудок обычных размеров и формы. В просвете желудка умеренное количество прозрачного, пенистого содержимого. Стенки эластичные, хорошо расправляются при инссуффляции воздухом. Складки обычной высоты, извиты, расположены продольно. При осмотре в инверсии кардиа плотно охватывает эндоскоп, область свода без особенностей. Слизистая желудка розовая. Привратник округлой формы, смыкается полностью, свободно проходим."/>
+                <LineBreak/>
+                <Run Text="Луковица 12-перстной кишки не деформирована, слизистая светло-розовая. Выход из луковицы свободный. Постбульбарные отделы не изменены, циркулярные складки выражены. Слизистая их светло-розовая. БДС при осмотре трофей органических изменений не выявлено."/>
+            </Paragraph>
+            <Paragraph BorderThickness="0,1,0,1" BorderBrush="Black" Padding="0,5">
+                <Run Text="Заключение " FontWeight="Bold"/>
+                <Run Text="Патологических изменений слизистой осмотренных органов не выявлено"/>
+            </Paragraph>
+            <Paragraph BorderBrush="Black">
+                <Run Text="Оборудование Название устройства: " FontWeight="Bold"/>
+                <Run Text="стойка видео-эндоскопическая (комплект), гастроскоп PENTAX FG 24V."/>
+            </Paragraph>
+        </FlowDocument>
+    </RichTextBox>
+</UserControl>

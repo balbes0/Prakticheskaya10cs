@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace WpfApp1.View.Cards
 {
     /// <summary>
-    /// Логика взаимодействия для testrtb.xaml
+    /// Логика взаимодействия для AppointmentRichTextBoxView.xaml
     /// </summary>
-    public partial class testrtb : UserControl
+    public partial class AppointmentRichTextBoxView : UserControl
     {
-        public testrtb()
+        public AppointmentRichTextBoxView()
         {
             InitializeComponent();
         }
