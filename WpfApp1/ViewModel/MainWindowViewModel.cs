@@ -24,7 +24,7 @@ namespace WpfApp1.ViewModel
         private RichTextBox appointmentRTB;
         byte[] fileBytes = null;
 
-        public MainWindowViewModel(RichTextBox appointmentRTB, int id_doctor)
+        public MainWindowViewModel(int id_doctor)
         {
             GetDoctorDetailsByID(id_doctor);
             titleName = $"ЕМИАС — {currentDoctor.Surname} {currentDoctor.Name} {currentDoctor.Patronymic}";
@@ -707,7 +707,7 @@ namespace WpfApp1.ViewModel
         {
             if (currentAppointment != null)
             {
-                /*ApiHelper.PostWithoutJson($"https://localhost:{port}/api/Appointments/Complete/{currentAppointment.IdAppointment}");//меняем статус записи на завершен.
+                ApiHelper.PostWithoutJson($"https://localhost:{port}/api/Appointments/Complete/{currentAppointment.IdAppointment}");//меняем статус записи на завершен.
 
                 if (AnalysisCheckBox == true)
                 {
@@ -721,13 +721,26 @@ namespace WpfApp1.ViewModel
 
                 SaveAppointmentDocument();
 
+                var appointmentRichTextBox = new AppointmentRichTextBox
+                {
+                    _DateNow = _DateNow,
+                    OMS = OMS,
+                    SpecialityName = SpecialityName,
+                    DoctorInitials = DoctorInitials,
+                    Complaints = Complaints,
+                    Examination = Examination,
+                    Diagnosis = Diagnosis,
+                    AdditionsDiagnosis = AdditionsDiagnosis,
+                    Recommendations = Recommendations
+                };
+
+                AppointmentRichTextBoxView appointmentRichTextBoxView = new AppointmentRichTextBoxView(appointmentRichTextBox);
+                appointmentRTB = appointmentRichTextBoxView.AppointmentRTB;
+
                 MessageBox.Show("Запись завершена!");
 
                 ClearingFields();
-                UpdateCurrentAppointments();*/
-
-                RichTextBox rtb = new RichTextBox();
-                analysisRTB = rtb;
+                UpdateCurrentAppointments();
             }
         }
         
@@ -774,28 +787,6 @@ namespace WpfApp1.ViewModel
                     PatientName = $"Пациент: {currentAppointment.FirstName} {currentAppointment.LastName} {currentAppointment.Patronymic}";
                     OMS = $"{currentAppointment.OMS:0000 0000 0000 0000}";
                     MainVisibility = Visibility.Visible;
-
-                    var analysisRichTextBox = new AnalysisRichTextBox
-                    {
-                        _DateNow = _DateNow,
-                        OMS = OMS
-                    };
-                    var analysisrichTextBoxView = new AnalysisRichTextBoxView(analysisRichTextBox);
-                    RTBAnalysis = analysisrichTextBoxView;
-                    analysisRTB = analysisrichTextBoxView.AnalysisRTB;
-
-                    var researchRichTextBox = new ResearchRichTextBox
-                    {
-                        _DateNow = _DateNow,
-                        OMS = OMS,
-                        Diagnosis = Diagnosis
-                    };
-                    var researchrichTextBoxView = new ResearchRichTextBoxView(researchRichTextBox);
-                    RTBResearch = researchrichTextBoxView;
-                    researchRTB = researchrichTextBoxView.ResearchRTB;
-
-                    AppointmentRichTextBoxView appointmentRichTextBoxView = new AppointmentRichTextBoxView();
-                    appointmentRTB = appointmentRichTextBoxView.AppointmentRTB; 
                 }
                 else if (currentAppointment != null)
                 {
@@ -804,13 +795,21 @@ namespace WpfApp1.ViewModel
             }
         }
 
-        #region Визуал приколы
         private void ResearchRTB() //чекбокс исследования ртб
         {
             if (researchCheckBox == true)
             {
                 ResearchRTBVisibility = Visibility.Visible;
                 AttachFilesButton = Visibility.Visible;
+                var researchRichTextBox = new ResearchRichTextBox
+                {
+                    _DateNow = _DateNow,
+                    OMS = OMS,
+                    Diagnosis = Diagnosis
+                };
+                var researchrichTextBoxView = new ResearchRichTextBoxView(researchRichTextBox);
+                RTBResearch = researchrichTextBoxView;
+                researchRTB = researchrichTextBoxView.ResearchRTB;
             }
             else
             {
@@ -824,6 +823,14 @@ namespace WpfApp1.ViewModel
             if (analysisCheckBox == true)
             {
                 AnalysisRTBVisibility = Visibility.Visible;
+                var analysisRichTextBox = new AnalysisRichTextBox
+                {
+                    _DateNow = _DateNow,
+                    OMS = OMS
+                };
+                var analysisrichTextBoxView = new AnalysisRichTextBoxView(analysisRichTextBox);
+                RTBAnalysis = analysisrichTextBoxView;
+                analysisRTB = analysisrichTextBoxView.AnalysisRTB;
             }
             else
             {
@@ -852,6 +859,5 @@ namespace WpfApp1.ViewModel
                 isDarkTheme = true;
             }
         }
-        #endregion
     }
 }

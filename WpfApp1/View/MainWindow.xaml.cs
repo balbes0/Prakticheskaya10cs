@@ -11,8 +11,9 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel(AppointmentRTB, ID_Doctor);
+            DataContext = new MainWindowViewModel(ID_Doctor);
         }
+
         #region TitleBar
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         {
